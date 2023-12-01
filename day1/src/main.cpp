@@ -9,6 +9,7 @@
 #include <ranges>
 #include <cctype>
 #include <fstream>
+#include <array>
 
 int part1(const std::vector<std::string>& input) {
     return std::accumulate(begin(input), end(input), 0, [](int sum, std::string_view s) {
@@ -19,27 +20,23 @@ int part1(const std::vector<std::string>& input) {
     });
 }
 
+constexpr std::array<std::string_view, 9> englishNumbers{"one", "two",   "three", "four", "five",
+                                                         "six", "seven", "eight", "nine"};
+
 std::pair<size_t, int> findFirstOfEnglishNumber(std::string_view s) {
-    std::vector<std::pair<size_t, int>> found;
-    for (int value = 1;
-         std::string_view en : {"one", "two", "three", "four", "five", "six", "seven", "eight", "nine"}) {
-        if (auto i = s.find(en); i != s.npos) found.emplace_back(i, value);
-        ++value;
-    }
-    if (found.empty()) return std::make_pair(std::string::npos, 0);
-    return *std::ranges::min_element(found, std::less<size_t>{}, [](auto& p) { return p.first; });
+    for (size_t i = 0; i < s.size(); ++i)
+        if (auto it = std::ranges::find_if(englishNumbers, [sv = s.substr(i)](auto en) { return sv.starts_with(en); });
+            it != end(englishNumbers))
+            return {i, static_cast<int>(std::distance(begin(englishNumbers), it) + 1)};
+    return {std::string::npos, 0};
 }
 
-std::pair<size_t, int> findLastOfEnglishNumber(std::string s) {
-    std::ranges::reverse(s);
-    std::vector<std::pair<size_t, int>> found;
-    for (int value = 1;
-         std::string_view en : {"eno", "owt", "eerht", "ruof", "evif", "xis", "neves", "thgie", "enin"}) {
-        if (auto i = s.find(en); i != s.npos) found.emplace_back(s.size() - i - en.size(), value);
-        ++value;
-    }
-    if (found.empty()) return std::make_pair(std::string::npos, 0);
-    return *std::ranges::max_element(found, std::less<size_t>{}, [](auto& p) { return p.first; });
+std::pair<size_t, int> findLastOfEnglishNumber(std::string_view s) {
+    for (size_t i = s.size() + 1; i--;)
+        if (auto it = std::ranges::find_if(englishNumbers, [sv = s.substr(0, i)](auto en) { return sv.ends_with(en); });
+            it != end(englishNumbers))
+            return {i - it->size(), static_cast<int>(std::distance(begin(englishNumbers), it) + 1)};
+    return {std::string::npos, 0};
 }
 
 int part2(const std::vector<std::string>& input) {
