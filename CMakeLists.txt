@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.23 FATAL_ERROR)
 
 project(2023 CXX)
 
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
@@ -14,7 +14,7 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/helpers.cmake)
 find_static_analysis(CLANGTIDY CPPCHECK CPPLINT)
 
 # Executables
-add_subdirectory(2023)
+add_subdirectory("day1")
 
 # Tests
 enable_testing()
