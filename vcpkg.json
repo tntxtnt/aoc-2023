@@ -1,0 +1,9 @@
+{
+  "name": "2023",
+  "version": "0.0.1",
+  "dependencies": [
+    "fmt",
+    "catch2"
+  ],
+  "builtin-baseline": "1384becefca5c1511f0e070c43f66ad6a3783c8e"
+}

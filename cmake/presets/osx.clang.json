@@ -1,0 +1,67 @@
+{
+  "version": 4,
+  "include": [
+    "base/osx.json"
+  ],
+  "configurePresets": [
+    {
+      "name": "osx-clang-default",
+      "displayName": "Ninja Multi-Config macOS with Clang",
+      "inherits": "osx-only",
+      "generator": "Ninja Multi-Config",
+      "cacheVariables": {"CMAKE_CXX_COMPILER": "clang++"}
+    },
+    {
+      "name": "osx-clang-vcpkg-submodule",
+      "displayName": "Ninja Multi-Config macOS with Clang, using vcpkg as submodule",
+      "inherits": ["osx-clang-default", "vcpkg-submodule"],
+      "environment": {"VCPKG_TARGET_TRIPLET": "x64-osx"}
+    },
+    {
+      "name": "osx-clang-vcpkg-local",
+      "displayName": "Ninja Multi-Config macOS with Clang, using local vcpkg",
+      "inherits": ["osx-clang-default", "vcpkg-local"],
+      "environment": {"VCPKG_TARGET_TRIPLET": "x64-osx"}
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "osx-clang-default",
+      "configurePreset": "osx-clang-default",
+      "displayName": "Build preset for osx-clang-default",
+      "inherits": "osx-only"
+    },
+    {
+      "name": "osx-clang-vcpkg-submodule",
+      "configurePreset": "osx-clang-vcpkg-submodule",
+      "displayName": "Build preset for osx-clang-vcpkg-submodule",
+      "inherits": "osx-only"
+    },
+    {
+      "name": "osx-clang-vcpkg-local",
+      "configurePreset": "osx-clang-vcpkg-local",
+      "displayName": "Build preset for osx-clang-vcpkg-local",
+      "inherits": "osx-only"
+    }
+  ],
+  "testPresets": [
+    {
+      "name": "osx-clang-default",
+      "configurePreset": "osx-clang-default",
+      "displayName": "Test preset for osx-clang-default, remember to pass -C <Debug/Release> to ctest",
+      "inherits": ["base", "osx-only"]
+    },
+    {
+      "name": "osx-clang-vcpkg-submodule",
+      "configurePreset": "osx-clang-vcpkg-submodule",
+      "displayName": "Test preset for osx-clang-vcpkg-submodule, remember to pass -C <Debug/Release> to ctest",
+      "inherits": ["base", "osx-only"]
+    },
+    {
+      "name": "osx-clang-vcpkg-local",
+      "configurePreset": "osx-clang-vcpkg-local",
+      "displayName": "Test preset for osx-clang-vcpkg-local, remember to pass -C <Debug/Release> to ctest",
+      "inherits": ["base", "osx-only"]
+    }
+  ]
+}
