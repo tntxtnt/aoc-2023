@@ -1,15 +1,11 @@
-#include <iostream>
 #include <fmt/format.h>
 #include <fmt/color.h>
-#include <string>
 #include <sstream>
 #include <vector>
 #include <numeric>
 #include <algorithm>
 #include <ranges>
-#include <cctype>
 #include <fstream>
-#include <array>
 
 struct SetOfCubes {
     int red;

@@ -16,6 +16,7 @@ find_static_analysis(CLANGTIDY CPPCHECK CPPLINT)
 # Executables
 add_subdirectory("day1")
 add_subdirectory("day2")
+add_subdirectory("day3")
 
 # Tests
 enable_testing()
