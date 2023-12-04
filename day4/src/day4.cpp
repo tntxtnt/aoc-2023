@@ -7,13 +7,14 @@
 #include <algorithm>
 #include <ranges>
 
+static constexpr std::string_view kInputFilename = "day4.txt";
+
 struct Card {
     std::vector<int> winningNumbers;
     std::vector<int> myNumbers;
 };
 
 using Input = std::vector<Card>;
-
 Input parseInput(std::istream& in);
 
 int part1(const Input& input) {
@@ -44,9 +45,9 @@ std::pair<bool, bool> test();
 int main() {
     auto [test1, test2] = test();
     if (!test1) return 1;
-    auto in = std::ifstream("day4.txt");
+    auto in = std::ifstream(kInputFilename.data());
     if (!in) {
-        fmt::print("Cannot open 'day4.txt'\n");
+        fmt::print("Cannot open '{}'\n", kInputFilename);
         return -1;
     }
     const auto input = parseInput(in);

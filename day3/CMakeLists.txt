@@ -1,4 +1,4 @@
-add_executable(day3 src/main.cpp)
+add_executable(day3 src/day3.cpp)
 
 find_package(fmt CONFIG REQUIRED)
 target_link_libraries(day3 PRIVATE fmt::fmt)

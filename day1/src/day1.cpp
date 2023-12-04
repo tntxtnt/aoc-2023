@@ -9,7 +9,12 @@
 #include <fstream>
 #include <array>
 
-int part1(const std::vector<std::string>& input) {
+static constexpr std::string_view kInputFilename = "day1.txt";
+
+using Input = std::vector<std::string>;
+Input parseInput(std::istream& in);
+
+int part1(const Input& input) {
     return std::accumulate(begin(input), end(input), 0, [](int sum, std::string_view s) {
         const auto it = std::ranges::find_if(s, [](unsigned char c) { return std::isdigit(c); });
         if (it == end(s)) return sum;
@@ -37,7 +42,7 @@ std::pair<size_t, int> findLastOfEnglishNumber(std::string_view s) {
     return {std::string::npos, 0};
 }
 
-int part2(const std::vector<std::string>& input) {
+int part2(const Input& input) {
     return std::accumulate(begin(input), end(input), 0, [](int sum, auto& s) {
         const auto it = std::ranges::find_if(s, [](unsigned char c) { return std::isdigit(c); });
         const auto jt = std::ranges::find_last_if(s, [](unsigned char c) { return std::isdigit(c); }).begin();
@@ -51,29 +56,30 @@ int part2(const std::vector<std::string>& input) {
     });
 }
 
-std::vector<std::string> parseInput(std::istream& in);
-bool test();
+std::pair<bool, bool> test();
 
 int main() {
-    if (!test()) return 1;
-    if (auto in = std::ifstream("day1.txt"); !in) {
-        fmt::print("Cannot open 'day1.txt'\n");
-        return 2;
-    } else {
-        const auto input = parseInput(in);
-        fmt::print("Part 1: {}\n", fmt::styled(part1(input), fmt::fg(fmt::color::yellow)));
-        fmt::print("Part 2: {}\n", fmt::styled(part2(input), fmt::fg(fmt::color::yellow)));
+    auto [test1, test2] = test();
+    if (!test1) return 1;
+    auto in = std::ifstream(kInputFilename.data());
+    if (!in) {
+        fmt::print("Cannot open '{}'\n", kInputFilename);
+        return -1;
     }
+    const auto input = parseInput(in);
+    fmt::print("Part 1: {}\n", fmt::styled(part1(input), fmt::fg(fmt::color::yellow)));
+    if (!test2) return 2;
+    fmt::print("Part 2: {}\n", fmt::styled(part2(input), fmt::fg(fmt::color::yellow)));
 }
 
 
-std::vector<std::string> parseInput(std::istream& in) {
-    std::vector<std::string> res;
+Input parseInput(std::istream& in) {
+    Input res;
     for (std::string s; in >> s;) res.push_back(s);
     return res;
 }
 
-bool test() {
+std::pair<bool, bool> test() {
     std::istringstream iss1{R"(
 1abc2
 pqr3stu8vwx
@@ -107,5 +113,5 @@ zoneight234
     fmt::print("Part 2: expected {}, got {}\n", part2CorrectAnswer,
                fmt::styled(part2Answer, fmt::fg(part2Correct ? fmt::color::green : fmt::color::red)));
 
-    return part1Correct && part2Correct;
+    return {part1Correct, part2Correct};
 }

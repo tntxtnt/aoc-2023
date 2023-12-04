@@ -6,11 +6,16 @@
 #include <fstream>
 #include <unordered_set>
 
+static constexpr std::string_view kInputFilename = "day3.txt";
+
+using Input = std::vector<std::string>;
+Input parseInput(std::istream& in);
+
 struct Matrix {
-    const std::vector<std::string>& data;
+    const Input& data;
     const int rows;
     const int cols;
-    explicit Matrix(const std::vector<std::string>& matrix)
+    explicit Matrix(const Input& matrix)
     : data{matrix}, rows{static_cast<int>(data.size())}, cols{static_cast<int>(data[0].size())} {}
     int64_t cid(int i, int j) const { return i * cols + j; }
     template <class Func>
@@ -28,7 +33,7 @@ struct Matrix {
     char operator()(int i, int j) const { return data[i][j]; }
 };
 
-int part1(const std::vector<std::string>& input) {
+int part1(const Input& input) {
     int res{};
     Matrix mat{input};
     std::unordered_set<int64_t> adjacentToSymbols;
@@ -49,7 +54,7 @@ int part1(const std::vector<std::string>& input) {
     return res;
 }
 
-int part2(const std::vector<std::string>& input) {
+int part2(const Input& input) {
     int res{};
     Matrix mat{input};
     mat.forEachCell([&](int i, int j, char cellValue) {
@@ -73,29 +78,30 @@ int part2(const std::vector<std::string>& input) {
     return res;
 }
 
-std::vector<std::string> parseInput(std::istream& in);
-bool test();
+std::pair<bool, bool> test();
 
 int main() {
-    if (!test()) return 1;
-    if (auto in = std::ifstream("day3.txt"); !in) {
-        fmt::print("Cannot open 'day3.txt'\n");
-        return 2;
-    } else {
-        const auto input = parseInput(in);
-        fmt::print("Part 1: {}\n", fmt::styled(part1(input), fmt::fg(fmt::color::yellow)));
-        fmt::print("Part 2: {}\n", fmt::styled(part2(input), fmt::fg(fmt::color::yellow)));
+    auto [test1, test2] = test();
+    if (!test1) return 1;
+    auto in = std::ifstream(kInputFilename.data());
+    if (!in) {
+        fmt::print("Cannot open '{}'\n", kInputFilename);
+        return -1;
     }
+    const auto input = parseInput(in);
+    fmt::print("Part 1: {}\n", fmt::styled(part1(input), fmt::fg(fmt::color::yellow)));
+    if (!test2) return 2;
+    fmt::print("Part 2: {}\n", fmt::styled(part2(input), fmt::fg(fmt::color::yellow)));
 }
 
 
-std::vector<std::string> parseInput(std::istream& in) {
-    std::vector<std::string> res;
+Input parseInput(std::istream& in) {
+    Input res;
     for (std::string line; in >> line;) res.push_back(line);
     return res;
 }
 
-bool test() {
+std::pair<bool, bool> test() {
     std::istringstream iss1{R"(
 467..114..
 ...*......
@@ -123,5 +129,5 @@ bool test() {
     fmt::print("Part 2: expected {}, got {}\n", part2CorrectAnswer,
                fmt::styled(part2Answer, fmt::fg(part2Correct ? fmt::color::green : fmt::color::red)));
 
-    return part1Correct && part2Correct;
+    return {part1Correct, part2Correct};
 }
