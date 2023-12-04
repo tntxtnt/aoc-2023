@@ -15,7 +15,20 @@ struct Card {
 };
 
 using Input = std::vector<Card>;
-Input parseInput(std::istream& in);
+
+Input parseInput(std::istream& in) {
+    Input res;
+    for (std::string line; std::getline(in, line);) {
+        std::istringstream lineStream{line};
+        Card card;
+        std::string tok;
+        lineStream >> tok >> tok;
+        for (; lineStream >> tok && tok[0] != '|';) card.winningNumbers.push_back(std::stoi(tok));
+        for (int n; lineStream >> n;) card.myNumbers.push_back(n);
+        res.emplace_back(std::move(card));
+    }
+    return res;
+}
 
 int part1(const Input& input) {
     return std::transform_reduce(begin(input), end(input), 0, std::plus{}, [](Card card) {
@@ -38,37 +51,6 @@ int part2(const Input& input) {
         ++cardId;
     }
     return std::ranges::fold_left(cardCount, 0, std::plus{});
-}
-
-std::pair<bool, bool> test();
-
-int main() {
-    auto [test1, test2] = test();
-    if (!test1) return 1;
-    auto in = std::ifstream(kInputFilename.data());
-    if (!in) {
-        fmt::print("Cannot open '{}'\n", kInputFilename);
-        return -1;
-    }
-    const auto input = parseInput(in);
-    fmt::print("Part 1: {}\n", fmt::styled(part1(input), fmt::fg(fmt::color::yellow)));
-    if (!test2) return 2;
-    fmt::print("Part 2: {}\n", fmt::styled(part2(input), fmt::fg(fmt::color::yellow)));
-}
-
-
-Input parseInput(std::istream& in) {
-    Input res;
-    for (std::string line; std::getline(in, line);) {
-        std::istringstream lineStream{line};
-        Card card;
-        std::string tok;
-        lineStream >> tok >> tok;
-        for (; lineStream >> tok && tok[0] != '|';) card.winningNumbers.push_back(std::stoi(tok));
-        for (int n; lineStream >> n;) card.myNumbers.push_back(n);
-        res.emplace_back(std::move(card));
-    }
-    return res;
 }
 
 std::pair<bool, bool> test() {
@@ -96,4 +78,18 @@ Card 6: 31 18 13 56 72 | 74 77 10 23 35 67 36 11
                fmt::styled(part2Answer, fmt::fg(part2Correct ? fmt::color::green : fmt::color::red)));
 
     return {part1Correct, part2Correct};
+}
+
+int main() {
+    auto [test1, test2] = test();
+    if (!test1) return 1;
+    auto in = std::ifstream(kInputFilename.data());
+    if (!in) {
+        fmt::print("Cannot open '{}'\n", kInputFilename);
+        return -1;
+    }
+    const auto input = parseInput(in);
+    fmt::print("Part 1: {}\n", fmt::styled(part1(input), fmt::fg(fmt::color::yellow)));
+    if (!test2) return 2;
+    fmt::print("Part 2: {}\n", fmt::styled(part2(input), fmt::fg(fmt::color::yellow)));
 }

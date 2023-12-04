@@ -21,46 +21,6 @@ struct Game {
 };
 
 using Input = std::vector<Game>;
-Input parseInput(std::istream& in);
-
-int part1(const Input& input) {
-    static constexpr SetOfCubes input0{12, 13, 14};
-    int res{};
-    for (int gameId = 0; auto& game : input) {
-        ++gameId;
-        if (std::ranges::all_of(game.subsets, [&](auto& subset) { return subset < input0; })) res += gameId;
-    }
-    return res;
-}
-
-int part2(const Input& input) {
-    return std::transform_reduce(begin(input), end(input), 0, std::plus{}, [](const Game& game) {
-        SetOfCubes minSet{};
-        for (auto& subset : game.subsets) {
-            minSet.red = std::min(minSet.red, -subset.red);
-            minSet.green = std::min(minSet.green, -subset.green);
-            minSet.blue = std::min(minSet.blue, -subset.blue);
-        }
-        return -minSet.red * minSet.green * minSet.blue;
-    });
-}
-
-std::pair<bool, bool> test();
-
-int main() {
-    auto [test1, test2] = test();
-    if (!test1) return 1;
-    auto in = std::ifstream(kInputFilename.data());
-    if (!in) {
-        fmt::print("Cannot open '{}'\n", kInputFilename);
-        return -1;
-    }
-    const auto input = parseInput(in);
-    fmt::print("Part 1: {}\n", fmt::styled(part1(input), fmt::fg(fmt::color::yellow)));
-    if (!test2) return 2;
-    fmt::print("Part 2: {}\n", fmt::styled(part2(input), fmt::fg(fmt::color::yellow)));
-}
-
 
 Input parseInput(std::istream& in) {
     Input res;
@@ -88,6 +48,28 @@ Input parseInput(std::istream& in) {
     return res;
 }
 
+int part1(const Input& input) {
+    static constexpr SetOfCubes input0{12, 13, 14};
+    int res{};
+    for (int gameId = 0; auto& game : input) {
+        ++gameId;
+        if (std::ranges::all_of(game.subsets, [&](auto& subset) { return subset < input0; })) res += gameId;
+    }
+    return res;
+}
+
+int part2(const Input& input) {
+    return std::transform_reduce(begin(input), end(input), 0, std::plus{}, [](const Game& game) {
+        SetOfCubes minSet{};
+        for (auto& subset : game.subsets) {
+            minSet.red = std::min(minSet.red, -subset.red);
+            minSet.green = std::min(minSet.green, -subset.green);
+            minSet.blue = std::min(minSet.blue, -subset.blue);
+        }
+        return -minSet.red * minSet.green * minSet.blue;
+    });
+}
+
 std::pair<bool, bool> test() {
     std::istringstream iss1{R"(
 Game 1: 3 blue, 4 red; 1 red, 2 green, 6 blue; 2 green
@@ -112,4 +94,18 @@ Game 5: 6 red, 1 blue, 3 green; 2 blue, 1 red, 2 green
                fmt::styled(part2Answer, fmt::fg(part2Correct ? fmt::color::green : fmt::color::red)));
 
     return {part1Correct, part2Correct};
+}
+
+int main() {
+    auto [test1, test2] = test();
+    if (!test1) return 1;
+    auto in = std::ifstream(kInputFilename.data());
+    if (!in) {
+        fmt::print("Cannot open '{}'\n", kInputFilename);
+        return -1;
+    }
+    const auto input = parseInput(in);
+    fmt::print("Part 1: {}\n", fmt::styled(part1(input), fmt::fg(fmt::color::yellow)));
+    if (!test2) return 2;
+    fmt::print("Part 2: {}\n", fmt::styled(part2(input), fmt::fg(fmt::color::yellow)));
 }

@@ -12,7 +12,12 @@
 static constexpr std::string_view kInputFilename = "day1.txt";
 
 using Input = std::vector<std::string>;
-Input parseInput(std::istream& in);
+
+Input parseInput(std::istream& in) {
+    Input res;
+    for (std::string s; in >> s;) res.push_back(s);
+    return res;
+}
 
 int part1(const Input& input) {
     return std::accumulate(begin(input), end(input), 0, [](int sum, std::string_view s) {
@@ -56,29 +61,6 @@ int part2(const Input& input) {
     });
 }
 
-std::pair<bool, bool> test();
-
-int main() {
-    auto [test1, test2] = test();
-    if (!test1) return 1;
-    auto in = std::ifstream(kInputFilename.data());
-    if (!in) {
-        fmt::print("Cannot open '{}'\n", kInputFilename);
-        return -1;
-    }
-    const auto input = parseInput(in);
-    fmt::print("Part 1: {}\n", fmt::styled(part1(input), fmt::fg(fmt::color::yellow)));
-    if (!test2) return 2;
-    fmt::print("Part 2: {}\n", fmt::styled(part2(input), fmt::fg(fmt::color::yellow)));
-}
-
-
-Input parseInput(std::istream& in) {
-    Input res;
-    for (std::string s; in >> s;) res.push_back(s);
-    return res;
-}
-
 std::pair<bool, bool> test() {
     std::istringstream iss1{R"(
 1abc2
@@ -114,4 +96,18 @@ zoneight234
                fmt::styled(part2Answer, fmt::fg(part2Correct ? fmt::color::green : fmt::color::red)));
 
     return {part1Correct, part2Correct};
+}
+
+int main() {
+    auto [test1, test2] = test();
+    if (!test1) return 1;
+    auto in = std::ifstream(kInputFilename.data());
+    if (!in) {
+        fmt::print("Cannot open '{}'\n", kInputFilename);
+        return -1;
+    }
+    const auto input = parseInput(in);
+    fmt::print("Part 1: {}\n", fmt::styled(part1(input), fmt::fg(fmt::color::yellow)));
+    if (!test2) return 2;
+    fmt::print("Part 2: {}\n", fmt::styled(part2(input), fmt::fg(fmt::color::yellow)));
 }

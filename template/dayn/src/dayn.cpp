@@ -1,0 +1,66 @@
+#include <fmt/format.h>
+#include <fmt/color.h>
+#include <vector>
+#include <sstream>
+#include <fstream>
+#include <numeric>
+#include <algorithm>
+#include <ranges>
+
+static constexpr std::string_view kInputFilename = "dayn.txt";
+
+using Input = std::vector<std::string>;
+
+Input parseInput(std::istream& in) {
+    Input res;
+    for (std::string line; std::getline(in, line);) {
+        res.push_back(line);
+    }
+    return res;
+}
+
+int part1(const Input& input) {
+    return static_cast<int>(input.size());
+}
+
+int part2(const Input& input) {
+    return static_cast<int>(input.size());
+}
+
+std::pair<bool, bool> test() {
+    std::istringstream iss1{R"(
+line 1
+line 2
+line 3
+)"};
+    iss1.ignore();
+    const auto input1 = parseInput(iss1);
+
+    constexpr int part1CorrectAnswer = 1;
+    const int part1Answer = part1(input1);
+    const bool part1Correct = part1Answer == part1CorrectAnswer;
+    fmt::print("Part 1: expected {}, got {}\n", part1CorrectAnswer,
+               fmt::styled(part1Answer, fmt::fg(part1Correct ? fmt::color::green : fmt::color::red)));
+
+    constexpr int part2CorrectAnswer = 11;
+    const int part2Answer = part2(input1);
+    const bool part2Correct = part2Answer == part2CorrectAnswer;
+    fmt::print("Part 2: expected {}, got {}\n", part2CorrectAnswer,
+               fmt::styled(part2Answer, fmt::fg(part2Correct ? fmt::color::green : fmt::color::red)));
+
+    return {part1Correct, part2Correct};
+}
+
+int main() {
+    auto [test1, test2] = test();
+    if (!test1) return 1;
+    auto in = std::ifstream(kInputFilename.data());
+    if (!in) {
+        fmt::print("Cannot open '{}'\n", kInputFilename);
+        return -1;
+    }
+    const auto input = parseInput(in);
+    fmt::print("Part 1: {}\n", fmt::styled(part1(input), fmt::fg(fmt::color::yellow)));
+    if (!test2) return 2;
+    fmt::print("Part 2: {}\n", fmt::styled(part2(input), fmt::fg(fmt::color::yellow)));
+}
