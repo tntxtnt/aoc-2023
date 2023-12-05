@@ -12,5 +12,5 @@ target_sanitize_options(dayn OPTIONS address undefined leak CONFIGS Debug RelWit
 target_fixit(dayn)
 
 # Use ${CMAKE_CURRENT_BINARY_DIR} for output dir
-# configure_file(${resource_file} ${destination_file} COPYONLY)           # re-copy if source changes
-file(COPY "dayn.txt" DESTINATION ${CMAKE_CURRENT_BINARY_DIR}) # copy only once
+configure_file("dayn.txt" "${CMAKE_CURRENT_BINARY_DIR}/dayn.txt" COPYONLY) # re-copy if source changes
+# file(COPY "dayn.txt" DESTINATION ${CMAKE_CURRENT_BINARY_DIR}) # copy only once
