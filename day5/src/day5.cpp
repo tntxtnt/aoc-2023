@@ -58,7 +58,7 @@ struct CITransf {
 
 struct Input {
     std::vector<int64_t> seeds;
-    std::array<std::vector<CITransf>, 8> mapping;
+    std::array<std::vector<CITransf>, 7> mapping;
 };
 
 Input parseInput(std::istream& in) {
