@@ -10,45 +10,41 @@
 #include <stdexcept>
 namespace ranges = std::ranges;
 namespace views = std::views;
+using namespace std::string_literals;
 
 static constexpr std::string_view kInputFilename = "day8.txt";
 
 struct Input {
-    std::string instructions;
+    std::string instrs;
     std::unordered_map<std::string, std::pair<std::string, std::string>> adj;
 };
 
 Input parseInput(std::istream& in) {
     Input res;
-    in >> res.instructions;
+    in >> res.instrs;
     for (std::string from, ignore, to1, to2; in >> from >> ignore >> to1 >> to2;)
         res.adj[from] = std::make_pair(to1.substr(1, 3), to2.substr(0, 3));
     return res;
 }
 
-int part1(const Input& input) {
-    std::string s = "AAA";
-    int res{};
-    for (size_t i = 0; s != "ZZZ"; i = (i + 1) % input.instructions.size()) {
-        const auto it = input.adj.find(s);
-        // if (it == end(input.adj)) throw std::runtime_error("Dead end\n");
-        s = input.instructions[i] == 'L' ? it->second.first : it->second.second;
-        ++res;
-    }
-    return res;
+int part1(const Input& input, std::string s = "AAA") {
+    return 1 + *(views::iota(0) | views::drop_while([&](int i) {
+                     return "ZZZ" != (s = input.instrs[i % input.instrs.size()] == 'L'
+                                              ? input.adj.find(s)->second.first
+                                              : input.adj.find(s)->second.second);
+                 })).begin();
 }
 
 int64_t part2(const Input& input) {
-    return ranges::fold_left(input.adj                                                        //
-                                 | views::filter([](auto& kv) { return kv.first[2] == 'A'; }) //
-                                 | views::transform([](auto& kv) { return kv.first; })        //
+    return ranges::fold_left(input.adj                                                    //
+                                 | views::keys                                            //
+                                 | views::filter([](auto& s) { return s.back() == 'A'; }) //
                                  | views::transform([&](std::string s) {
                                        return 1 + *(views::iota(0) | views::drop_while([&](int i) {
-                                                        const auto it = input.adj.find(s);
-                                                        s = input.instructions[i % input.instructions.size()] == 'L'
-                                                                ? it->second.first
-                                                                : it->second.second;
-                                                        return s[2] != 'Z';
+                                                        return (s = input.instrs[i % input.instrs.size()] == 'L'
+                                                                        ? input.adj.find(s)->second.first
+                                                                        : input.adj.find(s)->second.second)
+                                                                   .back() != 'Z';
                                                     })).begin();
                                    }),
                              1LL, [](auto res, int e) { return std::lcm(res, e); });
