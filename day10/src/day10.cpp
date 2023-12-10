@@ -96,9 +96,9 @@ int part1(const Input& input) {
     return res;
 }
 
-void recoverStart(Input& input) {
+std::pair<size_t, size_t> recoverStart(Input& input) {
     auto [r, c] = findStart(input);
-    if (r == -1) return;
+    if (r == -1) return {-1, -1};
     unsigned kind{}; // 0bTBLR
     if (r - 1 < input.size() && isConnectorT(input[r - 1][c])) kind |= 0b1000;
     if (r + 1 < input.size() && isConnectorB(input[r + 1][c])) kind |= 0b0100;
@@ -110,10 +110,11 @@ void recoverStart(Input& input) {
     if (kind == 0b0110) input[r][c] = '7';
     if (kind == 0b0101) input[r][c] = 'F';
     if (kind == 0b0011) input[r][c] = '-';
+    return {r, c};
 }
 
-Input getExpandedInput(Input& input) {
-    recoverStart(input);
+std::tuple<size_t, size_t, Input> getExpandedInput(Input& input) {
+    auto [sr, sc] = recoverStart(input);
     Input res;
     res.push_back(std::string(input[0].size() * 2 + 1, ' '));
     for (const auto& line : input) {
@@ -127,98 +128,84 @@ Input getExpandedInput(Input& input) {
             if (isConnectorL(res[i][j]) && j + 2 < res[0].size() && isConnectorR(res[i][j + 2])) res[i][j + 1] = '-';
             if (isConnectorT(res[i][j]) && i + 2 < res.size() && isConnectorB(res[i + 2][j])) res[i + 1][j] = '|';
         }
-    return res;
+    return {sr, sc, res};
 }
 
-void pprint(const Input& input) {
-    for (auto& line : input) {
-        for (char ch : line) {
-            if (ch == '|')
-                fmt::print("│");
+void pprint(const Input& input, size_t sr, size_t sc, const std::vector<std::vector<bool>>& isBorder,
+            const std::vector<std::vector<bool>>& isOutside) {
+    for (size_t i = 0; auto& line : input) {
+        for (size_t j = 0; char ch : line) {
+            const auto color = i == sr && j == sc ? fg(fmt::color::blue)
+                               : isBorder[i][j]   ? fg(fmt::color::pale_green)
+                               : isOutside[i][j]  ? fg(fmt::color::pale_golden_rod)
+                               : i % 2 && j % 2   ? fg(fmt::color::white)
+                                                  : fg(fmt::color::gray);
+            if (isOutside[i][j])
+                fmt::print(color, "O");
+            else if (ch == '|')
+                fmt::print(color, "│");
             else if (ch == '-')
-                fmt::print("─");
+                fmt::print(color, "─");
             else if (ch == 'F')
-                fmt::print("┌");
+                fmt::print(color, "┌");
             else if (ch == '7')
-                fmt::print("┐");
+                fmt::print(color, "┐");
             else if (ch == 'L')
-                fmt::print("└");
+                fmt::print(color, "└");
             else if (ch == 'J')
-                fmt::print("┘");
+                fmt::print(color, "┘");
             else
-                fmt::print("{}", ch);
+                fmt::print(color, "{}", ch);
+            ++j;
         }
         fmt::print("\n");
+        ++i;
     }
-    fmt::print("│\n");
 }
 
 int part2(Input input, bool debug = false) {
-    Input expInp = getExpandedInput(input);
-    // O
-    std::stack<std::pair<size_t, size_t>> st;
-    auto pushStack = [&](size_t r, size_t c) {
-        st.emplace(r, c);
-        expInp[r][c] = 'O';
-    };
-    pushStack(0, 0);
-    auto pushUnvisitedNeighbor = [&](size_t r, size_t c) {
-        if (r < expInp.size() && c < expInp[0].size() && (expInp[r][c] == '.' || expInp[r][c] == ' ')) pushStack(r, c);
-    };
-    while (!st.empty()) {
-        auto [r, c] = st.top();
-        st.pop();
-        pushUnvisitedNeighbor(r + 1, c);
-        pushUnvisitedNeighbor(r - 1, c);
-        pushUnvisitedNeighbor(r, c + 1);
-        pushUnvisitedNeighbor(r, c - 1);
-    }
-    // I
-    int res{};
-    auto markI = [&](size_t i, size_t j) {
-        std::stack<std::pair<size_t, size_t>> sti;
-        auto pushSti = [&](size_t r, size_t c) {
-            sti.emplace(r, c);
-            expInp[r][c] = 'I';
-            ++res;
+    auto [sr, sc, expInp] = getExpandedInput(input);
+    if (sr == -1) return -1;
+    auto dfs = [](size_t sr, size_t sc, auto& visited, auto&& validNeighbor, auto&& visit) {
+        std::stack<std::pair<size_t, size_t>> st;
+        auto push = [&](size_t r, size_t c) {
+            if (visited[r][c] || !validNeighbor(r, c)) return;
+            st.emplace(r, c);
+            visited[r][c] = true;
         };
-        pushSti(i, j);
-        while (!sti.empty()) {
-            auto [r, c] = sti.top();
-            sti.pop();
-            if (size_t nr = r - 2; nr < expInp.size() && isConnectorT(expInp[nr][c])) pushSti(nr, c);
-            if (size_t nr = r + 2; nr < expInp.size() && isConnectorB(expInp[nr][c])) pushSti(nr, c);
-            if (size_t nc = c - 2; nc < expInp[0].size() && isConnectorL(expInp[r][nc])) pushSti(r, nc);
-            if (size_t nc = c + 2; nc < expInp[0].size() && isConnectorR(expInp[r][nc])) pushSti(r, nc);
+        for (push(sr, sc); !st.empty();) {
+            auto [r, c] = st.top();
+            st.pop();
+            visit(r, c, push);
         }
     };
-    auto isInsideT = [](char top) { return !isConnectorT(top) && top != 'O'; };
-    auto isInsideB = [](char bot) { return !isConnectorB(bot) && bot != 'O'; };
-    auto isInsideL = [](char lef) { return !isConnectorL(lef) && lef != 'O'; };
-    auto isInsideR = [](char rig) { return !isConnectorR(rig) && rig != 'O'; };
-    for (size_t i = 0; i < input.size(); ++i) {
-        const size_t r = 1 + i * 2;
-        for (size_t j = 0; j < input[0].size(); ++j) {
-            const size_t c = 1 + j * 2;
-            const char ch = expInp[r][c];
-            if (ch == '.') {
-                markI(r, c);
-            } else if (ch == '|' && (isInsideT(expInp[r - 1][c]) || isInsideB(expInp[r + 1][c]))) {
-                markI(r, c);
-            } else if (ch == '-' && (isInsideL(expInp[r][c - 1]) || isInsideR(expInp[r][c + 1]))) {
-                markI(r, c);
-            } else if (ch == 'F' && (isInsideB(expInp[r + 1][c]) || isInsideR(expInp[r][c + 1]))) {
-                markI(r, c);
-            } else if (ch == '7' && (isInsideL(expInp[r][c - 1]) || isInsideB(expInp[r + 1][c]))) {
-                markI(r, c);
-            } else if (ch == 'L' && (isInsideT(expInp[r - 1][c]) || isInsideR(expInp[r][c + 1]))) {
-                markI(r, c);
-            } else if (ch == 'J' && (isInsideL(expInp[r][c - 1]) || isInsideT(expInp[r - 1][c]))) {
-                markI(r, c);
-            }
-        }
-    }
-    if (debug) pprint(expInp);
+    // Border
+    std::vector<std::vector<bool>> isBorder(expInp.size(), std::vector<bool>(expInp[0].size()));
+    dfs(
+        sr = 1 + 2 * sr, sc = 1 + 2 * sc, isBorder, [](size_t, size_t) { return true; },
+        [&](size_t r, size_t c, auto&& push) {
+            if (expInp[r][c] == '|') push(r - 1, c), push(r + 1, c);
+            if (expInp[r][c] == '-') push(r, c - 1), push(r, c + 1);
+            if (expInp[r][c] == 'F') push(r + 1, c), push(r, c + 1);
+            if (expInp[r][c] == '7') push(r + 1, c), push(r, c - 1);
+            if (expInp[r][c] == 'L') push(r - 1, c), push(r, c + 1);
+            if (expInp[r][c] == 'J') push(r - 1, c), push(r, c - 1);
+        });
+    // O
+    std::vector<std::vector<bool>> isOutside(expInp.size(), std::vector<bool>(expInp[0].size()));
+    dfs(
+        0, 0, isOutside, [&](size_t r, size_t c) { return !isBorder[r][c]; },
+        [&](size_t r, size_t c, auto&& push) {
+            if (r - 1 < expInp.size()) push(r - 1, c);
+            if (r + 1 < expInp.size()) push(r + 1, c);
+            if (c - 1 < expInp[0].size()) push(r, c - 1);
+            if (c + 1 < expInp[0].size()) push(r, c + 1);
+        });
+    int res{};
+    for (size_t i = 1; i < expInp.size(); i += 2)
+        for (size_t j = 1; j < expInp[0].size(); j += 2)
+            if (!isBorder[i][j] && !isOutside[i][j]) ++res;
+    if (debug) pprint(expInp, sr, sc, isBorder, isOutside);
     return res;
 }
 
@@ -279,7 +266,17 @@ L---JF-JLJ.||-FJLJJ7
 L.L7LFJ|||||FJL7||LJ
 L7JLJL-JLJLJL--JLJ.L
 )",
-                                                                10}};
+                                                                10},
+                                                               {R"(
+F-S---7
+|.....|
+|.F-7.|
+|.|.|.|
+|.L-J.|
+|.....|
+L-----J
+)",
+                                                                25}};
     bool part2Correct = true;
     for (auto [sv, correctAnswer] : part2Cases) {
         std::istringstream iss{sv.data()};
@@ -300,5 +297,5 @@ int main() {
     const auto input = parseInput(in);
     fmt::print("Part 1: {}\n", fmt::styled(part1(input), fmt::fg(fmt::color::yellow)));
     if (!test2) return 2;
-    fmt::print("Part 2: {}\n", fmt::styled(part2(input), fmt::fg(fmt::color::yellow)));
+    fmt::print("Part 2: {}\n", fmt::styled(part2(input, true), fmt::fg(fmt::color::yellow)));
 }
