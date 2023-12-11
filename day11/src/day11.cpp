@@ -6,9 +6,9 @@
 #include <fstream>
 #include <numeric>
 #include <algorithm>
-#include <ranges>
-namespace ranges = std::ranges;
-namespace views = std::views;
+#include <range/v3/algorithm.hpp>
+#include <range/v3/view.hpp>
+namespace views = ranges::views;
 
 static constexpr std::string_view kInputFilename = "day11.txt";
 
