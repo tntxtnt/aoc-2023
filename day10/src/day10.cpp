@@ -48,7 +48,6 @@ int part1(const Input& input) {
     const size_t rows = input.size();
     const size_t cols = input[0].size();
     auto [sr, sc] = findStart(input);
-    if (sr == -1) return -1;
     std::queue<std::tuple<size_t, size_t, int>> q;
     std::vector<std::vector<bool>> visited(rows, std::vector<bool>(cols));
     q.emplace(sr, sc, 0);
@@ -98,7 +97,6 @@ int part1(const Input& input) {
 
 std::pair<size_t, size_t> recoverStart(Input& input) {
     auto [r, c] = findStart(input);
-    if (r == -1) return {-1, -1};
     unsigned kind{}; // 0bTBLR
     if (r - 1 < input.size() && isConnectorT(input[r - 1][c])) kind |= 0b1000;
     if (r + 1 < input.size() && isConnectorB(input[r + 1][c])) kind |= 0b0100;
@@ -165,7 +163,6 @@ void pprint(const Input& input, size_t sr, size_t sc, const std::vector<std::vec
 
 int part2(Input input, bool debug = false) {
     auto [sr, sc, expInp] = getExpandedInput(input);
-    if (sr == -1) return -1;
     auto dfs = [](size_t sr, size_t sc, auto& visited, auto&& validNeighbor, auto&& visit) {
         std::stack<std::pair<size_t, size_t>> st;
         auto push = [&](size_t r, size_t c) {
