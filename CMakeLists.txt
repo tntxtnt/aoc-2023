@@ -25,6 +25,7 @@ add_subdirectory("day8")
 add_subdirectory("day9")
 add_subdirectory("day10")
 add_subdirectory("day11")
+add_subdirectory("day12")
 
 # Tests
 enable_testing()
