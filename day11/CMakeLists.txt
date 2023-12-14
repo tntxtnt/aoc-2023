@@ -1,7 +1,8 @@
 add_executable(day11 src/day11.cpp)
 
 find_package(fmt CONFIG REQUIRED)
-target_link_libraries(day11 PRIVATE fmt::fmt)
+find_package(range-v3 CONFIG REQUIRED)
+target_link_libraries(day11 PRIVATE fmt::fmt range-v3::range-v3)
 
 # Enable sanitizer for Debug config
 # If you're getting error LNK2038: mismatch detected for 'annotate_vector': value '0' doesn't match value '1'

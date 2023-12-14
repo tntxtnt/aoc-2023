@@ -30,7 +30,7 @@ Input parseInput(std::istream& in) {
 std::string buildStringFromId(std::string s, unsigned id) {
     for (char& ch : s)
         if (ch == '?') ch = ".#"[id % 2], id /= 2;
-    return std::move(s);
+    return s;
 }
 
 bool match(std::string_view sv, const std::vector<int>& counts) {
@@ -39,7 +39,7 @@ bool match(std::string_view sv, const std::vector<int>& counts) {
         if (i == sv.npos) return false;
         size_t len = 0;
         while (i + len < sv.size() && sv[i + len] == '#') ++len;
-        if (len != cnt) return false;
+        if (len != static_cast<size_t>(cnt)) return false;
         i = sv.find('#', i + len);
     }
     return i == sv.npos;
@@ -69,10 +69,10 @@ struct DynamicProgramming {
         return *dp[a][b][c];
     }
     int64_t f(int a, int b, int c) {
-        if (c == counts.size()) {
+        if (c == std::ssize(counts)) {
             return a == 0 ? s.substr(b).find('#') == s.npos : 0;
-        } else if (b == s.size()) {
-            return c == counts.size() - 1 && a == counts[c];
+        } else if (b == std::ssize(s)) {
+            return c == std::ssize(counts) - 1 && a == counts[c];
         } else if (a == counts[c]) {
             return s[b] == '#' ? 0 : solve(0, b + 1, c + 1);
         } else {
