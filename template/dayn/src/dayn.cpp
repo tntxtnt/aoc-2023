@@ -28,26 +28,52 @@ int part2(const Input& input) {
 }
 
 std::pair<bool, bool> test() {
-    std::istringstream iss1{R"(
+    auto testPart1 = [](std::istream& is, int correctAnswer) {
+        const auto input = parseInput(is);
+        const int answer = part1(input);
+        const bool correct = answer == correctAnswer;
+        fmt::print("Part 1: expected {}, got {}\n", correctAnswer,
+                   fmt::styled(answer, fmt::fg(correct ? fmt::color::green : fmt::color::red)));
+        return correct;
+    };
+    constexpr std::pair<std::string_view, int> part1Cases[] = {{R"(
 line 1
 line 2
 line 3
-)"};
-    iss1.ignore();
-    const auto input1 = parseInput(iss1);
+)",
+                                                                0}};
+    bool part1Correct = true;
+    for (auto [sv, correctAnswer] : part1Cases) {
+        std::istringstream iss{sv.data()};
+        iss.ignore();
+        part1Correct &= testPart1(iss, correctAnswer);
+    }
 
-    constexpr int part1CorrectAnswer = 1;
-    const int part1Answer = part1(input1);
-    const bool part1Correct = part1Answer == part1CorrectAnswer;
-    fmt::print("Part 1: expected {}, got {}\n", part1CorrectAnswer,
-               fmt::styled(part1Answer, fmt::fg(part1Correct ? fmt::color::green : fmt::color::red)));
-
-    constexpr int part2CorrectAnswer = 11;
-    const int part2Answer = part2(input1);
-    const bool part2Correct = part2Answer == part2CorrectAnswer;
-    fmt::print("Part 2: expected {}, got {}\n", part2CorrectAnswer,
-               fmt::styled(part2Answer, fmt::fg(part2Correct ? fmt::color::green : fmt::color::red)));
-
+    auto testPart2 = [](std::istream& is, int correctAnswer) {
+        const auto input = parseInput(is);
+        const int answer = part2(input);
+        const bool correct = answer == correctAnswer;
+        fmt::print("Part 2: expected {}, got {}\n", correctAnswer,
+                   fmt::styled(answer, fmt::fg(correct ? fmt::color::green : fmt::color::red)));
+        return correct;
+    };
+    constexpr std::pair<std::string_view, int> part2Cases[] = {{R"(
+line 1
+line 2
+line 3
+)",
+                                                                0},
+                                                               {R"(
+line 1
+line 2
+)",
+                                                                0}};
+    bool part2Correct = true;
+    for (auto [sv, correctAnswer] : part2Cases) {
+        std::istringstream iss{sv.data()};
+        iss.ignore();
+        part2Correct &= testPart2(iss, correctAnswer);
+    }
     return {part1Correct, part2Correct};
 }
 
