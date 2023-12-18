@@ -54,8 +54,32 @@ int part1(const Input& input, int sr, int sc) {
     return res + (int)trenches.size();
 }
 
-int part2(const Input& input) {
-    return static_cast<int>(input.size());
+int64_t part2(const Input& input) {
+    std::vector<std::pair<int64_t, int64_t>> p;
+    p.emplace_back(0, 0);
+    for (int64_t r = 0, c = 0; auto& line : input) {
+        std::istringstream iss{line};
+        char dir;
+        int64_t len;
+        std::string color;
+        iss >> dir >> len >> color;
+        dir = "RDLU"[end(color)[-2] - '0'];
+        len = std::stoll(color.substr(2, 5), nullptr, 16);
+        const int dr = dir == 'U' ? -1 : dir == 'D' ? 1 : 0;
+        const int dc = dir == 'L' ? -1 : dir == 'R' ? 1 : 0;
+        r += dr * len;
+        c += dc * len;
+        p.emplace_back(r, c);
+    }
+    // https://en.wikipedia.org/wiki/Shoelace_formula#Trapezoid_formula
+    int64_t area{};
+    for (auto [p1, p2] : p | std::views::adjacent<2>) {
+        auto& [y1, x1] = p1;
+        auto& [y2, x2] = p2;
+        area += (y1 + y2) * (x1 - x2);
+        area += std::abs(y2 - y1) + std::abs(x2 - x1);
+    }
+    return area / 2 + 1;
 }
 
 std::pair<bool, bool> test() {
@@ -67,9 +91,9 @@ std::pair<bool, bool> test() {
                    fmt::styled(answer, fmt::fg(correct ? fmt::color::green : fmt::color::red)));
         return correct;
     };
-    auto testPart2 = [](std::istream& is, int correctAnswer) {
+    auto testPart2 = [](std::istream& is, int64_t correctAnswer) {
         const auto input = parseInput(is);
-        const int answer = part2(input);
+        const auto answer = part2(input);
         const bool correct = answer == correctAnswer;
         fmt::print("Part 2: expected {}, got {}\n", correctAnswer,
                    fmt::styled(answer, fmt::fg(correct ? fmt::color::green : fmt::color::red)));
@@ -100,17 +124,23 @@ U 2 (#7a21e3)
         part1Correct &= testPart1(iss, correctAnswer);
     }
 
-    constexpr std::pair<std::string_view, int> part2Cases[] = {{R"(
-line 1
-line 2
-line 3
+    constexpr std::pair<std::string_view, int64_t> part2Cases[] = {{R"(
+R 6 (#70c710)
+D 5 (#0dc571)
+L 2 (#5713f0)
+D 2 (#d2c081)
+R 2 (#59c680)
+D 2 (#411b91)
+L 5 (#8ceee2)
+U 2 (#caa173)
+L 1 (#1b58a2)
+U 2 (#caa171)
+R 2 (#7807d2)
+U 3 (#a77fa3)
+L 2 (#015232)
+U 2 (#7a21e3)
 )",
-                                                                0},
-                                                               {R"(
-line 1
-line 2
-)",
-                                                                0}};
+                                                                952408144115LL}};
     bool part2Correct = true;
     for (auto [sv, correctAnswer] : part2Cases) {
         std::istringstream iss{sv.data()};
