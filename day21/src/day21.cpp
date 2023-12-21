@@ -80,18 +80,18 @@ int64_t part2(const Input& input, int steps) {
     };
     auto [quot, rem] = std::div(steps, (int)input.size());
     int prevDist = 0;
-    std::vector<int64_t> rems;
+    std::vector<int64_t> f;
     while (!q.empty()) {
         auto [r, c, dist] = q.front();
         if (dist > prevDist) {
             prevDist = dist;
             if (prevDist == rem) {
-                rems.push_back(q.size());
+                f.push_back(q.size());
                 rem += (int)input.size();
                 fmt::print("{} {}\n", dist, q.size());
             }
         }
-        if (rems.size() == 3) break;
+        if (f.size() == 3) break;
         if (dist == steps) break;
         q.pop();
         for (auto [dr, dc] : std::array<std::pair<int, int>, 4>{{{-1, 0}, {0, 1}, {1, 0}, {0, -1}}})
@@ -113,6 +113,7 @@ g(x) = f0v0(x) + f1v1(x) + f2v2(x)
 2L^2 * g(x) = f0(x^2 - (x1 + x2)x + x1x2) - 2f1(x^2 - (x0 + x2)x + x0x2) + f2(x^2 - (x0 + x1)x + x0x1)
             = (f0 - 2f1 + f2)x^2 - (f0x1 + f0x2 - 2f1x0 - 2f1x2 + f2x0 + f2x1)x + f0x1x2 - 2f1x0x2 + f2x0x1
             = (f0 - 2f1 + f2)x^2 - (x1(f0 + f2) + x2(f0 - 2f1) + x0(f2 - 2f1))x + x2(f0x1 - f1x0) + x0(f2x1 - f1x2)
+
 Let z = ceil(x / L)
 z0 = 1
 z1 = 2
@@ -125,13 +126,37 @@ Let m = f1 - f0
 --> a = (n - m) / 2               2a = f0 - 2f1 + f2
     b = m - 3a                    2b = (2f1 - 2f0 - 3*(f0 - 2f1 + f2)) = -5f0 + 8f1 - 3f2
     c = f0 - b - a                2c = 2f0 + 5f0 - 8f1 + 3f2 - f0 + 2f1 - f2 = 6f0 - 6f1 + 2f2
+
+Let z = floor(x / L)
+z0 = 0
+z1 = 1
+z2 = 2
+2 g(z) = (f0 - 2f1 + f2)z^2 - (z1(f0 + f2) + z2(f0 - 2f1) + z0(f2 - 2f1))z + z2(f0z1 - f1z0) + z0(f2z1 - f1z2)
+       = (f0 - 2f1 + f2)z^2 - (f0 + f2 + 2f0 - 4f1)z + 2f0
+       = (f0 - 2f1 + f2)z^2 - (3f0 - 4f1 + f2)z + 2f0
+Let m = f1 - f0
+    n = f2 - f1
+--> a = (n - m) / 2          2a = f0 - 2f1 + f2
+    b = (3m - n) / 2         2b = 3f1 - 3f0 - f2 + f1 = -3f0 + 4f1 - f2
+    c = f0                   2c = 2f0
+
+Let z = floor(x / L) - 1
+z0 = -1
+z1 = 0
+z2 = 1
+2 g(z) = (f0 - 2f1 + f2)z^2 - (z1(f0 + f2) + z2(f0 - 2f1) + z0(f2 - 2f1))z + z2(f0z1 - f1z0) + z0(f2z1 - f1z2)
+       = (f0 - 2f1 + f2)z^2 - (f0 - 2f1 - f2 + 2f1)z + 2f1
+       = (f0 - 2f1 + f2)z^2 + (f2 - f0)z + 2f1
+Let m = f1 - f0
+    n = f2 - f1
+--> a = (n - m) / 2          2a = f0 - 2f1 + f2
+    b = (n + m) / 2          2b = f2 - f0
+    c = f1                   2c = 2f1
     */
-    const auto m = rems[1] - rems[0];
-    const auto n = rems[2] - rems[1];
-    const auto a = (n - m) / 2;
-    const auto b = m - 3 * a;
-    const auto c = rems[0] - b - a;
-    quot += rem != 0;
+    const auto c = f[1];
+    const auto b = (f[2] - f[0]) / 2;
+    const auto a = b - c + f[0];
+    --quot;
     fmt::print("{}*x^2 + {}*x + {}\n", a, b, c);
     return a * quot * quot + b * quot + c;
 }
