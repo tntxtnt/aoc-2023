@@ -94,7 +94,7 @@ int64_t part2(const Input& input, int steps) {
         if (f.size() == 3) break;
         if (dist == steps) break;
         q.pop();
-        for (auto [dr, dc] : std::array<std::pair<int, int>, 4>{{{-1, 0}, {0, 1}, {1, 0}, {0, -1}}})
+        for (auto& [dr, dc] : std::array<std::pair<int, int>, 4>{{{-1, 0}, {0, 1}, {1, 0}, {0, -1}}})
             if (const int nr = r + dr, nc = c + dc, rr = loop(nr, (int)input.size()),
                 cc = loop(nc, (int)input[0].size());
                 input[rr][cc] != '#' && visited[std::make_pair(nr, nc)] < dist + 1) {
