@@ -1,7 +1,8 @@
 add_executable(day24 src/day24.cpp)
 
 find_package(fmt CONFIG REQUIRED)
-target_link_libraries(day24 PRIVATE fmt::fmt)
+find_package(Boost REQUIRED)
+target_link_libraries(day24 PRIVATE fmt::fmt Boost::boost)
 
 # Enable sanitizer for Debug config
 # If you're getting error LNK2038: mismatch detected for 'annotate_vector': value '0' doesn't match value '1'
