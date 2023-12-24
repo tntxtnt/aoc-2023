@@ -8,6 +8,11 @@
 #include <cctype>
 #include <fstream>
 #include <array>
+#include <chrono>
+namespace cron = std::chrono;
+using namespace std::chrono_literals;
+namespace ranges = std::ranges;
+namespace views = std::views;
 
 static constexpr std::string_view kInputFilename = "day1.txt";
 
@@ -21,9 +26,9 @@ Input parseInput(std::istream& in) {
 
 int part1(const Input& input) {
     return std::accumulate(begin(input), end(input), 0, [](int sum, std::string_view s) {
-        const auto it = std::ranges::find_if(s, [](unsigned char c) { return std::isdigit(c); });
+        const auto it = ranges::find_if(s, [](unsigned char c) { return std::isdigit(c); });
         if (it == end(s)) return sum;
-        const auto jt = std::ranges::find_last_if(s, [](unsigned char c) { return std::isdigit(c); }).begin();
+        const auto jt = ranges::find_last_if(s, [](unsigned char c) { return std::isdigit(c); }).begin();
         return sum + 10 * (*it - '0') + *jt - '0';
     });
 }
@@ -33,7 +38,7 @@ constexpr std::array<std::string_view, 9> englishNumbers{"one", "two",   "three"
 
 std::pair<size_t, int> findFirstOfEnglishNumber(std::string_view s) {
     for (size_t i = 0; i < s.size(); ++i)
-        if (auto it = std::ranges::find_if(englishNumbers, [sv = s.substr(i)](auto en) { return sv.starts_with(en); });
+        if (auto it = ranges::find_if(englishNumbers, [sv = s.substr(i)](auto en) { return sv.starts_with(en); });
             it != end(englishNumbers))
             return {i, static_cast<int>(std::distance(begin(englishNumbers), it) + 1)};
     return {std::string::npos, 0};
@@ -41,7 +46,7 @@ std::pair<size_t, int> findFirstOfEnglishNumber(std::string_view s) {
 
 std::pair<size_t, int> findLastOfEnglishNumber(std::string_view s) {
     for (size_t i = s.size() + 1; i--;)
-        if (auto it = std::ranges::find_if(englishNumbers, [sv = s.substr(0, i)](auto en) { return sv.ends_with(en); });
+        if (auto it = ranges::find_if(englishNumbers, [sv = s.substr(0, i)](auto en) { return sv.ends_with(en); });
             it != end(englishNumbers))
             return {i - it->size(), static_cast<int>(std::distance(begin(englishNumbers), it) + 1)};
     return {std::string::npos, 0};
@@ -49,8 +54,8 @@ std::pair<size_t, int> findLastOfEnglishNumber(std::string_view s) {
 
 int part2(const Input& input) {
     return std::accumulate(begin(input), end(input), 0, [](int sum, auto& s) {
-        const auto it = std::ranges::find_if(s, [](unsigned char c) { return std::isdigit(c); });
-        const auto jt = std::ranges::find_last_if(s, [](unsigned char c) { return std::isdigit(c); }).begin();
+        const auto it = ranges::find_if(s, [](unsigned char c) { return std::isdigit(c); });
+        const auto jt = ranges::find_last_if(s, [](unsigned char c) { return std::isdigit(c); }).begin();
         const size_t i1 = std::distance(begin(s), it);
         const size_t j1 = std::distance(begin(s), jt);
         const auto [i2, i2val] = findFirstOfEnglishNumber(s);
@@ -107,7 +112,20 @@ int main() {
         return -1;
     }
     const auto input = parseInput(in);
-    fmt::print("Part 1: {}\n", fmt::styled(part1(input), fmt::fg(fmt::color::yellow)));
+
+    auto getTimeColor = [](const auto& elapsed) {
+        return elapsed < 100ms ? fmt::color::light_green : elapsed < 1s ? fmt::color::orange : fmt::color::orange_red;
+    };
+    auto startTime = cron::steady_clock::now();
+    const auto part1Ans = part1(input);
+    cron::duration<double> elapsed = cron::steady_clock::now() - startTime;
+    fmt::print("Part 1: {} in {}\n", fmt::styled(part1Ans, fmt::fg(fmt::color::yellow)),
+               fmt::styled(fmt::format("{:.06f}s", elapsed.count()), fmt::fg(getTimeColor(elapsed))));
+
     if (!test2) return 2;
-    fmt::print("Part 2: {}\n", fmt::styled(part2(input), fmt::fg(fmt::color::yellow)));
+    startTime = cron::steady_clock::now();
+    const auto part2Ans = part2(input);
+    elapsed = cron::steady_clock::now() - startTime;
+    fmt::print("Part 2: {} in {}\n", fmt::styled(part2Ans, fmt::fg(fmt::color::yellow)),
+               fmt::styled(fmt::format("{:.06f}s", elapsed.count()), fmt::fg(getTimeColor(elapsed))));
 }

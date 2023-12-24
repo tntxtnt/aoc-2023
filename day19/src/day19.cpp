@@ -8,6 +8,11 @@
 #include <unordered_map>
 #include <stack>
 #include <ranges>
+#include <chrono>
+namespace cron = std::chrono;
+using namespace std::chrono_literals;
+namespace ranges = std::ranges;
+namespace views = std::views;
 
 static constexpr std::string_view kInputFilename = "day19.txt";
 
@@ -73,9 +78,9 @@ Input parseInput(std::istream& in) {
 
 int part1(const Input& input) {
     auto& [workflows, ratings] = input;
-    return std::ranges::fold_left(
+    return ranges::fold_left(
         ratings //
-            | std::views::filter([&](auto& rating) {
+            | views::filter([&](auto& rating) {
                   std::string s = "in";
                   while (s != "A" && s != "R") {
                       const auto it = workflows.find(s);
@@ -84,7 +89,7 @@ int part1(const Input& input) {
                   }
                   return s == "A";
               }) //
-            | std::views::transform([](auto& rating) { return rating.x + rating.m + rating.a + rating.s; }),
+            | views::transform([](auto& rating) { return rating.x + rating.m + rating.a + rating.s; }),
         0, std::plus{});
 }
 
@@ -221,7 +226,20 @@ int main() {
         return -1;
     }
     const auto input = parseInput(in);
-    fmt::print("Part 1: {}\n", fmt::styled(part1(input), fmt::fg(fmt::color::yellow)));
+
+    auto getTimeColor = [](const auto& elapsed) {
+        return elapsed < 100ms ? fmt::color::light_green : elapsed < 1s ? fmt::color::orange : fmt::color::orange_red;
+    };
+    auto startTime = cron::steady_clock::now();
+    const auto part1Ans = part1(input);
+    cron::duration<double> elapsed = cron::steady_clock::now() - startTime;
+    fmt::print("Part 1: {} in {}\n", fmt::styled(part1Ans, fmt::fg(fmt::color::yellow)),
+               fmt::styled(fmt::format("{:.06f}s", elapsed.count()), fmt::fg(getTimeColor(elapsed))));
+
     if (!test2) return 2;
-    fmt::print("Part 2: {}\n", fmt::styled(part2(input), fmt::fg(fmt::color::yellow)));
+    startTime = cron::steady_clock::now();
+    const auto part2Ans = part2(input);
+    elapsed = cron::steady_clock::now() - startTime;
+    fmt::print("Part 2: {} in {}\n", fmt::styled(part2Ans, fmt::fg(fmt::color::yellow)),
+               fmt::styled(fmt::format("{:.06f}s", elapsed.count()), fmt::fg(getTimeColor(elapsed))));
 }

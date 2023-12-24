@@ -12,7 +12,7 @@ using namespace std::chrono_literals;
 namespace ranges = std::ranges;
 namespace views = std::views;
 
-static constexpr std::string_view kInputFilename = "dayn.txt";
+static constexpr std::string_view kInputFilename = "day24.txt";
 
 using Input = std::vector<std::string>;
 

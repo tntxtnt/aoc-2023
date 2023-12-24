@@ -8,6 +8,11 @@
 #include <set>
 #include <stack>
 #include <ranges>
+#include <chrono>
+namespace cron = std::chrono;
+using namespace std::chrono_literals;
+namespace ranges = std::ranges;
+namespace views = std::views;
 
 static constexpr std::string_view kInputFilename = "day18.txt";
 
@@ -73,7 +78,7 @@ int64_t part2(const Input& input) {
     }
     // https://en.wikipedia.org/wiki/Shoelace_formula#Trapezoid_formula
     int64_t area{};
-    for (auto [p1, p2] : p | std::views::adjacent<2>) {
+    for (auto [p1, p2] : p | views::adjacent<2>) {
         auto& [y1, x1] = p1;
         auto& [y2, x2] = p2;
         area += (y1 + y2) * (x1 - x2);
@@ -140,7 +145,7 @@ U 3 (#a77fa3)
 L 2 (#015232)
 U 2 (#7a21e3)
 )",
-                                                                952408144115LL}};
+                                                                    952408144115LL}};
     bool part2Correct = true;
     for (auto [sv, correctAnswer] : part2Cases) {
         std::istringstream iss{sv.data()};
@@ -159,7 +164,20 @@ int main() {
         return -1;
     }
     const auto input = parseInput(in);
-    fmt::print("Part 1: {}\n", fmt::styled(part1(input, 1, 1), fmt::fg(fmt::color::yellow)));
+
+    auto getTimeColor = [](const auto& elapsed) {
+        return elapsed < 100ms ? fmt::color::light_green : elapsed < 1s ? fmt::color::orange : fmt::color::orange_red;
+    };
+    auto startTime = cron::steady_clock::now();
+    const auto part1Ans = part1(input, 1, 1);
+    cron::duration<double> elapsed = cron::steady_clock::now() - startTime;
+    fmt::print("Part 1: {} in {}\n", fmt::styled(part1Ans, fmt::fg(fmt::color::yellow)),
+               fmt::styled(fmt::format("{:.06f}s", elapsed.count()), fmt::fg(getTimeColor(elapsed))));
+
     if (!test2) return 2;
-    fmt::print("Part 2: {}\n", fmt::styled(part2(input), fmt::fg(fmt::color::yellow)));
+    startTime = cron::steady_clock::now();
+    const auto part2Ans = part2(input);
+    elapsed = cron::steady_clock::now() - startTime;
+    fmt::print("Part 2: {} in {}\n", fmt::styled(part2Ans, fmt::fg(fmt::color::yellow)),
+               fmt::styled(fmt::format("{:.06f}s", elapsed.count()), fmt::fg(getTimeColor(elapsed))));
 }

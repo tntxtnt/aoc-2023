@@ -12,6 +12,9 @@
 #include <array>
 #include <unordered_map>
 #include <unordered_set>
+#include <chrono>
+namespace cron = std::chrono;
+using namespace std::chrono_literals;
 namespace ranges = std::ranges;
 namespace views = std::views;
 
@@ -27,12 +30,12 @@ Input parseInput(std::istream& in) {
 
 int part1(const Input& input) {
     std::queue<std::tuple<int, size_t, size_t, size_t, size_t>> q;
-    std::vector<std::vector<int>> visited(input.size(), std::vector<int>(input[0].size()));
+    std::vector<std::vector<int>> dists(input.size(), std::vector<int>(input[0].size()));
     q.emplace(0, 0, 1, -1, -1);
     while (!q.empty()) {
         auto [dist, r, c, fr, fc] = q.front();
         q.pop();
-        visited[r][c] = dist;
+        dists[r][c] = dist;
         if (input[r][c] == '.') {
             for (auto [dr, dc] : std::array<std::pair<int, int>, 4>{{{-1, 0}, {0, 1}, {1, 0}, {0, -1}}})
                 if (const size_t nr = r + dr, nc = c + dc;
@@ -52,7 +55,7 @@ int part1(const Input& input) {
                 q.emplace(dist + 1, nr, nc, r, c);
         }
     }
-    return visited[input.size() - 1][input[0].size() - 2];
+    return dists[input.size() - 1][input[0].size() - 2];
 }
 
 constexpr int kMult = 1000;
@@ -234,7 +237,20 @@ int main() {
         return -1;
     }
     const auto input = parseInput(in);
-    fmt::print("Part 1: {}\n", fmt::styled(part1(input), fmt::fg(fmt::color::yellow)));
+
+    auto getTimeColor = [](const auto& elapsed) {
+        return elapsed < 100ms ? fmt::color::light_green : elapsed < 1s ? fmt::color::orange : fmt::color::orange_red;
+    };
+    auto startTime = cron::steady_clock::now();
+    const auto part1Ans = part1(input);
+    cron::duration<double> elapsed = cron::steady_clock::now() - startTime;
+    fmt::print("Part 1: {} in {}\n", fmt::styled(part1Ans, fmt::fg(fmt::color::yellow)),
+               fmt::styled(fmt::format("{:.06f}s", elapsed.count()), fmt::fg(getTimeColor(elapsed))));
+
     if (!test2) return 2;
-    fmt::print("Part 2: {}\n", fmt::styled(part2(input), fmt::fg(fmt::color::yellow)));
+    startTime = cron::steady_clock::now();
+    const auto part2Ans = part2(input);
+    elapsed = cron::steady_clock::now() - startTime;
+    fmt::print("Part 2: {} in {}\n", fmt::styled(part2Ans, fmt::fg(fmt::color::yellow)),
+               fmt::styled(fmt::format("{:.06f}s", elapsed.count()), fmt::fg(getTimeColor(elapsed))));
 }
