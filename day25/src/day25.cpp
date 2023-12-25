@@ -44,15 +44,22 @@ private:
     }
     void removeRandomEdge() {
         // pop random edge
-        const size_t uid = std::uniform_int_distribution<size_t>{0, vertices.size() - 1}(prbg);
-        std::swap(vertices[uid], vertices.back());
-        const auto u = vertices.back();
-        vertices.pop_back();
-        const size_t vid = std::uniform_int_distribution<size_t>{0, adj[u].size() - 1}(prbg);
-        const auto v = std::next(begin(adj[u]), vid)->first;
-        const auto it = ranges::find(vertices, v);
-        std::swap(*it, vertices.back());
-        vertices.pop_back();
+        size_t u{};
+        size_t v{};
+        auto pop1 = [&] {
+            const size_t uid = std::uniform_int_distribution<size_t>{0, vertices.size() - 1}(prbg);
+            std::swap(vertices[uid], vertices.back());
+            const auto u = vertices.back();
+            vertices.pop_back();
+            return u;
+        };
+        for (;;) {
+            u = pop1();
+            v = pop1();
+            if (adj[u].count(v) > 0) break;
+            vertices.push_back(u);
+            vertices.push_back(v);
+        }
         // remove from adj
         const auto adju = std::move(adj[u]);
         const auto adjv = std::move(adj[v]);
