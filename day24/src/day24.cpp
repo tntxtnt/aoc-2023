@@ -188,7 +188,7 @@ std::vector<int64_t> getDivisors(int64_t n) {
     std::vector<std::vector<int64_t>> powers;
     for (auto& [k, v] : primeFactors) {
         std::vector<int64_t> p{1};
-        while (p.size() <= v) p.push_back(p.back() * k);
+        while (std::ssize(p) <= v) p.push_back(p.back() * k);
         powers.emplace_back(std::move(p));
     }
     std::vector<int64_t> res;
@@ -200,17 +200,31 @@ std::vector<int64_t> getDivisors(int64_t n) {
 
 template <class ComponentFn>
 std::vector<int64_t> getPossibleVels(Input& input, ComponentFn&& get) {
+    // x + vx*t1 = x1 + vx1*t1   rock collides with hailstone 1 at t1
+    // x + vx*t2 = x2 + vx2*t2   rock collides with hailstone 2 at t2
+    // x = x1 + (vx1 - vx)t1
+    // x = x2 + (vx2 - vx)t2
+    // x1 + (vx1 - vx)t1 = x2 + (vx2 - vx)t2
+    // If vx1 == vx2:
+    //   x1 + (vx1 - vx)t1 = x2 + (vx1 - vx)t2
+    //   x1 - x2 = (vx1 - vx)(t2 - t1)
+    //   t2 - t1 = (x1 - x2) / (vx1 - vx)
+    // Since t2 - t1 is integer, vx1 - vx must divides x1 - x2,
+    // or vx1 - vx is one of the (positive and negative) divisors of x1 - x2
+    // --> intersection of divisors of xi - xj where vxi == vxj must be set of possible values for vx
     std::unordered_map<int64_t, std::vector<Hailstone>> mx;
     for (auto& hs : input) mx[get(hs.vel)].push_back(hs);
     std::vector<int64_t> vx;
     bool vxFirst = true;
     for (auto& [k, v] : mx) {
-        for (auto [hs1, hsi] : v | views::adjacent<2>) {
+        const auto& hs1 = v[0];
+        for (const auto& hsi : v | views::drop(1)) {
             const auto dx = get(hs1.pos) - get(hsi.pos);
-            auto divisors = getDivisors(dx);
+            const auto divisors = getDivisors(dx);
             std::vector<int64_t> vxi;
             for (auto d : divisors | views::reverse) vxi.push_back(get(hsi.vel) - d);
             for (auto d : divisors) vxi.push_back(get(hsi.vel) + d);
+            // intersect vxi with vx
             if (vxFirst) {
                 vx = std::move(vxi);
                 vxFirst = false;
