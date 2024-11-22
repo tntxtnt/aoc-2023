@@ -6,7 +6,6 @@
 #include <fstream>
 #include <numeric>
 #include <algorithm>
-#include <ranges>
 #include <chrono>
 #include <unordered_map>
 #include <unordered_set>
@@ -15,8 +14,9 @@
 #include <cmath>
 namespace cron = std::chrono;
 using namespace std::chrono_literals;
-namespace ranges = std::ranges;
-namespace views = std::views;
+#include <range/v3/algorithm.hpp>
+#include <range/v3/view.hpp>
+namespace views = ranges::views;
 
 static constexpr std::string_view kInputFilename = "day25.txt";
 
